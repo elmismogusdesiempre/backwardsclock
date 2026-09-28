@@ -1,0 +1,1937 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0b0d1c">
+<title>⟲ Reloj Inverso</title>
+<style>
+/* ============ BASE ============ */
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+:root{
+  --app-bg: radial-gradient(circle at 30% 20%, #2b2f55, #0b0d1c 70%);
+  --face-bg: radial-gradient(circle at 50% 30%, #1c2044, #0d1026 78%);
+  --face-border: rgba(255,255,255,.14);
+  --num-color:#eef1ff;
+  --tick-color: rgba(255,255,255,.38);
+  --accent:#ffd166;
+  --hour-hand:#ffffff;
+  --min-hand:#ffffff;
+  --sec-hand:#ffd166;
+  --cap:#ffffff;
+  --ui-bg: rgba(20,22,40,.86);
+  --ui-text:#eef1ff;
+  --ui-border: rgba(255,255,255,.14);
+  --font: system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --num-font: system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --num-weight:700;
+  --shadow: 0 30px 70px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.05);
+}
+body{
+  margin:0;
+  font-family:var(--font);
+  background:var(--app-bg);
+  background-attachment:fixed;
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+  color:var(--ui-text);
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
+  min-height:100dvh;
+  overflow-x:hidden;
+  transition:background .5s ease, color .3s ease;
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+
+/* ============ TEMAS ============ */
+body[data-theme="elegante"]{
+  --app-bg: radial-gradient(circle at 30% 15%, #2a2418, #090806 72%);
+  --face-bg: radial-gradient(circle at 50% 28%, #1e1a11, #0c0a07 80%);
+  --face-border: rgba(212,175,55,.5);
+  --num-color:#e9dba4; --tick-color: rgba(212,175,55,.55);
+  --accent:#d4af37; --hour-hand:#e9dba4; --min-hand:#e9dba4; --sec-hand:#d4af37; --cap:#d4af37;
+  --num-font: Georgia,"Times New Roman",serif; --num-weight:600;
+  --ui-bg: rgba(18,15,9,.92); --ui-text:#f2e8cb; --ui-border: rgba(212,175,55,.32);
+}
+body[data-theme="kawaii"]{
+  --app-bg: radial-gradient(circle at 25% 15%, #ffe4f2, #ffd0e6 55%, #fff0f8);
+  --face-bg: radial-gradient(circle at 50% 28%, #fffafd, #ffe8f4 82%);
+  --face-border:#ffb3d9; --num-color:#ff5fa8; --tick-color: rgba(255,150,200,.65);
+  --accent:#ff7ab6; --hour-hand:#ff8fc4; --min-hand:#ff8fc4; --sec-hand:#a78bfa; --cap:#ff7ab6;
+  --num-font:"Comic Sans MS","Trebuchet MS",cursive; --num-weight:700;
+  --ui-bg: rgba(255,255,255,.94); --ui-text:#a0356e; --ui-border:#ffc9e4;
+  --shadow: 0 24px 60px rgba(255,120,180,.35), inset 0 0 0 1px rgba(255,255,255,.7);
+}
+body[data-theme="junior"]{
+  --app-bg: linear-gradient(135deg,#2b7cff,#00d4ff 50%,#7cffcb);
+  --face-bg: radial-gradient(circle at 50% 28%, #ffffff, #e9f4ff 82%);
+  --face-border:#2b7cff; --num-color:#173d8c; --tick-color: rgba(43,124,255,.45);
+  --accent:#ff7a45; --hour-hand:#173d8c; --min-hand:#173d8c; --sec-hand:#ff4d4d; --cap:#ff4d4d;
+  --num-font:"Trebuchet MS",Verdana,sans-serif; --num-weight:800;
+  --ui-bg: rgba(255,255,255,.95); --ui-text:#153a7a; --ui-border:#bcd8ff;
+}
+body[data-theme="minimal"]{
+  --app-bg: linear-gradient(135deg,#f6f7f9,#e5e8ee);
+  --face-bg:#ffffff; --face-border:#e0e4ea;
+  --num-color:#1c1f26; --tick-color: rgba(28,31,38,.28);
+  --accent:#1c1f26; --hour-hand:#1c1f26; --min-hand:#1c1f26; --sec-hand:#ff3b30; --cap:#1c1f26;
+  --num-font: "Helvetica Neue",Arial,sans-serif; --num-weight:500;
+  --ui-bg: rgba(255,255,255,.97); --ui-text:#1c1f26; --ui-border:#e3e6ec;
+  --shadow: 0 18px 50px rgba(20,25,40,.14), inset 0 0 0 1px rgba(0,0,0,.03);
+}
+body[data-theme="neon"]{
+  --app-bg: radial-gradient(circle at 30% 15%, #1b0035, #04010b 72%);
+  --face-bg: radial-gradient(circle at 50% 28%, #130030, #04010b 82%);
+  --face-border: rgba(0,255,240,.55); --num-color:#00fff0; --tick-color: rgba(255,0,200,.55);
+  --accent:#ff00c8; --hour-hand:#00fff0; --min-hand:#00fff0; --sec-hand:#ff00c8; --cap:#ff00c8;
+  --ui-bg: rgba(12,0,28,.93); --ui-text:#c8fff9; --ui-border: rgba(0,255,240,.3);
+}
+body[data-theme="retro"]{
+  --app-bg: linear-gradient(135deg,#e9d7ba,#c9a97a);
+  --face-bg: radial-gradient(circle at 50% 28%, #fdf7e6, #f0e3c6 82%);
+  --face-border:#8b6b43; --num-color:#5a4326; --tick-color: rgba(90,67,38,.42);
+  --accent:#c0392b; --hour-hand:#5a4326; --min-hand:#5a4326; --sec-hand:#c0392b; --cap:#c0392b;
+  --num-font:"Courier New",monospace; --num-weight:700;
+  --ui-bg: rgba(253,246,227,.96); --ui-text:#5a4326; --ui-border:#dcc7a2;
+}
+
+/* ============ TOPBAR ============ */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;gap:12px;
+}
+.logo{
+  display:flex;align-items:center;gap:9px;
+  font-weight:700;font-size:15px;letter-spacing:.4px;opacity:.92;
+  text-shadow:0 2px 12px rgba(0,0,0,.18);
+}
+.logo-mark{
+  display:grid;place-items:center;width:30px;height:30px;border-radius:10px;
+  background:var(--accent);color:#12131c;font-size:17px;font-weight:900;
+  box-shadow:0 6px 18px -6px var(--accent);
+}
+.icon-btn{
+  width:44px;height:44px;border-radius:15px;border:1px solid var(--ui-border);
+  background:var(--ui-bg);color:var(--ui-text);font-size:19px;cursor:pointer;
+  display:grid;place-items:center;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  transition:transform .15s ease, box-shadow .2s;
+  box-shadow:0 8px 24px -12px rgba(0,0,0,.5);
+}
+.icon-btn:active{transform:scale(.9);}
+.icon-btn.small{width:36px;height:36px;border-radius:12px;font-size:15px;}
+
+/* ============ MAIN ============ */
+main{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:22px;padding:6px 18px 26px;
+}
+
+/* ============ RELOJ ============ */
+.clock{
+  position:relative;
+  width:min(80vw, 54vh, 460px);
+  aspect-ratio:1/1;
+  flex:none;
+  border-radius:50%;
+  background:var(--face-bg);
+  border:10px solid var(--face-border);
+  box-shadow:var(--shadow), 0 0 70px -22px var(--accent);
+  overflow:hidden;
+  transition:background .45s, border-color .45s, box-shadow .45s;
+}
+.clock::after{
+  content:"";position:absolute;inset:5%;border-radius:50%;
+  border:1px solid var(--tick-color);opacity:.25;pointer-events:none;
+  z-index:4;
+}
+/* Capa 1: foto del tablero */
+.face-photo{
+  position:absolute;inset:0;border-radius:50%;
+  background-size:cover;background-position:center;background-repeat:no-repeat;
+  opacity:0;pointer-events:none;
+  z-index:1;
+  transition:opacity .25s ease;
+}
+.face-photo.has-photo{opacity:var(--face-opacity, .35);}
+
+/* Capa 2: bandera gigante centrada y recortada
+   Tamaño controlado por --flag-face-size (1 = ancho del reloj) */
+.face-flag{
+  position:absolute;
+  top:50%; left:50%;
+  transform:translate(-50%, -50%);
+  font-size:calc(var(--u, 300px) * var(--flag-face-size, 1.6));
+  line-height:1;
+  display:block;
+  white-space:nowrap;
+  opacity:0;
+  pointer-events:none;
+  user-select:none;
+  z-index:2;
+  transition:opacity .25s ease, font-size .18s ease;
+  will-change:opacity, font-size;
+}
+.face-flag.has-flag{ opacity:var(--flag-opacity, 1); }
+
+/* Capa 3: película de color */
+.face-film{
+  position:absolute;inset:0;
+  border-radius:50%;
+  background-color:var(--film-color, #000000);
+  opacity:var(--film-opacity, 0);
+  pointer-events:none;
+  z-index:3;
+  transition:opacity .25s ease, background-color .25s ease;
+}
+
+.ticks,.numbers{position:absolute;inset:0;z-index:5;}
+.tick{position:absolute;inset:0;transform:rotate(var(--a));}
+.tick::before{
+  content:"";position:absolute;left:50%;top:2.6%;
+  width:1.4%;height:2.4%;min-width:2px;
+  background:var(--tick-color);border-radius:6px;
+  transform:translateX(-50%);
+}
+.tick.major::before{width:2.4%;height:4.8%;background:var(--num-color);opacity:.85;}
+
+.num{position:absolute;inset:0;transform:rotate(var(--a));}
+.num span{
+  position:absolute;left:50%;top:8%;
+  transform:translateX(-50%) rotate(calc(-1 * var(--a)));
+  font-family:var(--num-font);
+  font-weight:var(--num-weight);
+  font-size:calc(var(--u,300px) * .082);
+  line-height:1;
+  color:var(--num-color);
+  display:block;
+  text-shadow:0 2px 10px rgba(0,0,0,.5), 0 0 3px rgba(0,0,0,.7);
+}
+
+.hand{
+  position:absolute;bottom:50%;
+  transform-origin:50% 100%;
+  border-radius:99px;
+  z-index:7;
+  will-change:transform;
+  filter: drop-shadow(0 2px 5px rgba(0,0,0,.6));
+}
+.hand.hour{
+  left:calc(50% - 1.6%);width:3.2%;height:24%;
+  background:var(--hour-hand);
+}
+.hand.minute{
+  left:calc(50% - 1.1%);width:2.2%;height:33%;
+  background:var(--min-hand);
+}
+.hand.second{
+  left:calc(50% - 0.45%);width:0.9%;height:40%;
+  background:var(--sec-hand);
+  z-index:8;
+  box-shadow:0 0 12px -2px var(--sec-hand);
+}
+.hand.second::after{
+  content:"";position:absolute;left:50%;top:100%;
+  width:100%;height:16%;background:var(--sec-hand);border-radius:99px;
+  transform:translateX(-50%);
+}
+.cap{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:5%;height:5%;border-radius:50%;background:var(--cap);
+  z-index:9;box-shadow:0 3px 12px rgba(0,0,0,.4);
+}
+
+/* ============ AVATAR / BANDERA CENTRAL ============ */
+.avatar{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:28%;height:28%;border-radius:50%;
+  border:2px solid var(--tick-color);
+  background-color:rgba(128,128,128,.10);
+  background-size:cover;background-position:center;
+  display:grid;place-items:center;
+  z-index:6;overflow:hidden;
+  transition:border-color .3s, box-shadow .3s, background-color .3s;
+}
+.avatar.has-photo{
+  border-color:var(--accent);
+  box-shadow:0 0 0 4px rgba(255,255,255,.06), 0 6px 22px rgba(0,0,0,.35);
+}
+.avatar.has-flag{
+  border-color:var(--accent);
+  background-color:rgba(255,255,255,.10);
+  box-shadow:0 0 0 4px rgba(255,255,255,.08), 0 6px 22px rgba(0,0,0,.35);
+}
+.avatar-hint{
+  font-size:calc(var(--u,300px) * .06);
+  opacity:.28;
+  line-height:1;
+  display:block;
+  text-align:center;
+}
+.avatar.has-photo .avatar-hint{display:none;}
+.avatar.has-flag .avatar-hint{display:none;}
+
+/* Bandera del centro — tamaño controlado por --flag-center-size
+   (1 = ancho del reloj completo; 0.28 ≈ cabe justo en el círculo) */
+.avatar .flag-fill{
+  position:absolute;
+  top:50%; left:50%;
+  transform:translate(-50%, -50%);
+  font-size:calc(var(--u, 300px) * var(--flag-center-size, 0.6));
+  line-height:1;
+  display:block;
+  white-space:nowrap;
+  opacity:0;
+  pointer-events:none;
+  user-select:none;
+  will-change:opacity, transform, font-size;
+  transition:font-size .18s ease;
+}
+.avatar.has-flag .flag-fill{
+  opacity:1;
+  animation: flagPop .5s cubic-bezier(.3,1.5,.5,1) both;
+}
+@keyframes flagPop{
+  0%  { opacity:0; transform:translate(-50%,-50%) scale(.4); }
+  70% { opacity:1; transform:translate(-50%,-50%) scale(1.08); }
+  100%{ opacity:1; transform:translate(-50%,-50%) scale(1); }
+}
+
+/* Badge contextual */
+.zone-badge{
+  display:none;
+  align-items:center;
+  gap:8px;
+  padding:6px 14px 6px 10px;
+  border-radius:99px;
+  background:var(--ui-bg);
+  border:1px solid var(--ui-border);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  font-size:12.5px;
+  font-weight:600;
+  letter-spacing:.2px;
+  color:var(--ui-text);
+  box-shadow:0 8px 22px -12px rgba(0,0,0,.6);
+  opacity:0;
+  transform:translateY(-4px);
+  transition:opacity .35s ease, transform .35s ease;
+  max-width:80vw;
+}
+.zone-badge.show{
+  display:inline-flex;
+  opacity:.94;
+  transform:translateY(0);
+}
+.zone-badge .zb-flag{ font-size:16px; line-height:1; flex:none; }
+.zone-badge .zb-name{
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60vw;
+}
+
+/* ============ DIGITAL ============ */
+.digital{text-align:center;line-height:1.25;}
+.digital .time{
+  font-size:clamp(30px,7.6vmin,48px);
+  font-weight:800;letter-spacing:2px;
+  font-variant-numeric:tabular-nums;
+  text-shadow:0 6px 26px rgba(0,0,0,.28);
+}
+.digital .zone{
+  margin-top:4px;font-size:13px;font-weight:600;opacity:.9;
+  display:inline-block;padding:5px 14px;border-radius:99px;
+  background:var(--ui-bg);border:1px solid var(--ui-border);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+}
+.digital .date{margin-top:7px;font-size:12.5px;opacity:.65;letter-spacing:.6px;text-transform:capitalize;}
+.digital.hidden{display:none;}
+
+/* ============ SHEET ============ */
+.backdrop{
+  position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:40;
+  opacity:0;pointer-events:none;transition:opacity .3s ease;
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+}
+.backdrop.open{opacity:1;pointer-events:auto;}
+
+.sheet{
+  position:fixed;left:50%;bottom:0;z-index:50;
+  width:min(560px,100%);
+  max-height:90vh;max-height:90dvh;
+  transform:translate(-50%,105%);
+  transition:transform .38s cubic-bezier(.2,.85,.3,1);
+  background:var(--ui-bg);
+  color:var(--ui-text);
+  border:1px solid var(--ui-border);
+  border-bottom:none;
+  border-radius:26px 26px 0 0;
+  backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+  box-shadow:0 -20px 60px rgba(0,0,0,.4);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.sheet.open{transform:translate(-50%,0);}
+.sheet-grip{
+  width:42px;height:5px;border-radius:99px;background:currentColor;opacity:.22;
+  margin:10px auto 0;flex:none;
+}
+.sheet-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 18px 10px;flex:none;
+}
+.sheet-head h2{margin:0;font-size:18px;letter-spacing:.3px;}
+.sheet-body{
+  overflow-y:auto;overscroll-behavior:contain;padding:0 18px 30px;
+  -webkit-overflow-scrolling:touch;
+}
+.sec{padding:16px 0;border-top:1px solid var(--ui-border);}
+.sec:first-child{border-top:none;}
+.sec h3{margin:0 0 12px;font-size:13px;font-weight:700;letter-spacing:.4px;opacity:.85;}
+
+/* inputs */
+.input,select.input{
+  width:100%;padding:12px 14px;border-radius:14px;
+  border:1px solid var(--ui-border);
+  background:rgba(128,128,128,.12);
+  color:var(--ui-text);font-family:inherit;font-size:14px;
+  outline:none;appearance:none;
+}
+select.input{
+  background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);
+  background-position:calc(100% - 20px) 50%, calc(100% - 14px) 50%;
+  background-size:6px 6px,6px 6px;background-repeat:no-repeat;
+  padding-right:40px;
+}
+.input:focus{border-color:var(--accent);}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  padding:12px 16px;border-radius:14px;cursor:pointer;
+  border:1px solid var(--ui-border);
+  background:rgba(128,128,128,.13);
+  color:var(--ui-text);font-family:inherit;font-size:14px;font-weight:600;
+  transition:transform .12s ease, background .2s;
+  user-select:none;
+}
+.btn:active{transform:scale(.96);}
+.btn.primary{background:var(--accent);color:#11131c;border-color:transparent;font-weight:800;}
+.btn.danger{color:#ff6a6a;}
+.btn.file{position:relative;overflow:hidden;}
+.row{display:flex;gap:10px;flex-wrap:wrap;}
+.row .btn{flex:1;}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{
+  padding:9px 14px;border-radius:99px;cursor:pointer;font-size:13px;font-weight:600;
+  border:1px solid var(--ui-border);background:rgba(128,128,128,.12);
+  color:var(--ui-text);transition:all .18s;user-select:none;
+}
+.chip.active{background:var(--accent);color:#11131c;border-color:transparent;box-shadow:0 6px 20px -8px var(--accent);}
+.chip:active{transform:scale(.94);}
+
+/* swatches */
+.swatches{display:flex;flex-wrap:wrap;gap:10px;}
+.sw{
+  width:36px;height:36px;border-radius:50%;cursor:pointer;
+  border:2px solid var(--ui-border);transition:transform .15s;
+  position:relative;flex:none;
+}
+.sw:active{transform:scale(.9);}
+.sw.active{box-shadow:0 0 0 3px var(--accent);transform:scale(1.08);}
+.sw.auto{background:conic-gradient(#ff5a5f,#ff9f1c,#2ecc71,#00d4ff,#7c5cff,#ff5a5f);}
+.sw.auto::after{
+  content:"";position:absolute;inset:0;border-radius:50%;
+  background:linear-gradient(45deg,transparent 44%,currentColor 44%,currentColor 56%,transparent 56%);
+  opacity:.55;
+}
+
+/* backgrounds */
+.bg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:10px;margin-bottom:12px;}
+.bg-item{
+  aspect-ratio:1/1;border-radius:16px;cursor:pointer;
+  border:2px solid var(--ui-border);
+  background-size:cover;background-position:center;
+  transition:transform .15s, box-shadow .2s;
+  position:relative;overflow:hidden;
+}
+.bg-item:active{transform:scale(.93);}
+.bg-item.active{box-shadow:0 0 0 3px var(--accent);}
+.bg-item span{
+  position:absolute;left:0;right:0;bottom:0;font-size:9.5px;font-weight:700;
+  text-align:center;padding:3px 2px;background:rgba(0,0,0,.42);color:#fff;
+  letter-spacing:.2px;
+}
+
+/* slider row */
+.slider-row{
+  display:flex;align-items:center;gap:12px;margin-top:12px;
+  padding:10px 12px;border-radius:14px;
+  background:rgba(128,128,128,.08);
+  border:1px solid var(--ui-border);
+}
+.slider-row label{
+  font-size:12px;font-weight:700;flex:none;opacity:.85;
+  letter-spacing:.3px;min-width:88px;
+}
+.slider-row input[type=range]{
+  flex:1;accent-color:var(--accent);cursor:pointer;height:22px;
+}
+.slider-val{
+  font-size:12.5px;font-weight:800;
+  font-variant-numeric:tabular-nums;
+  color:var(--accent);min-width:44px;text-align:right;
+}
+
+/* toggle row */
+.toggle-row{
+  display:flex;align-items:center;gap:12px;cursor:pointer;
+  padding:10px 12px;border-radius:14px;
+  border:1px solid var(--ui-border);background:rgba(128,128,128,.08);
+}
+.toggle-row .txt{flex:1;font-size:14px;font-weight:600;}
+.toggle-row .sub{font-size:11.5px;font-weight:500;opacity:.65;margin-top:2px;}
+
+/* ============ CUSTOM TIME PICKER ============ */
+.time-picker{display:flex;align-items:flex-end;gap:10px;}
+.tp-col{flex:1;min-width:0;}
+.tp-label{
+  display:block;font-size:10.5px;font-weight:700;letter-spacing:.8px;
+  text-transform:uppercase;opacity:.6;margin-bottom:5px;text-align:center;
+}
+.tp-select{
+  width:100%;
+  padding:14px 36px 14px 14px;
+  border-radius:14px;
+  border:1px solid var(--ui-border);
+  background-color:rgba(128,128,128,.12);
+  background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);
+  background-position:calc(100% - 22px) 50%, calc(100% - 16px) 50%;
+  background-size:6px 6px,6px 6px;background-repeat:no-repeat;
+  color:var(--ui-text);font-family:inherit;
+  font-size:24px;font-weight:800;
+  font-variant-numeric:tabular-nums;
+  text-align:center;
+  letter-spacing:1px;
+  outline:none;
+  -webkit-appearance:none;appearance:none;
+  cursor:pointer;
+}
+.tp-select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,255,255,.06);}
+.tp-sep{font-size:26px;font-weight:900;opacity:.4;padding-bottom:12px;flex:none;user-select:none;}
+.tp-preview{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  margin-top:10px;padding:10px 14px;border-radius:12px;
+  background:rgba(128,128,128,.10);
+  border:1px dashed var(--ui-border);
+  font-size:13px;opacity:.9;
+}
+.tp-preview strong{
+  font-size:19px;font-weight:900;letter-spacing:1.5px;
+  color:var(--accent);font-variant-numeric:tabular-nums;
+}
+
+/* ============ ALARMAS ============ */
+.alarm-list{display:flex;flex-direction:column;gap:9px;margin-bottom:14px;}
+.empty{font-size:13px;opacity:.6;text-align:center;padding:16px 0;}
+.alarm-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 14px;border-radius:16px;
+  border:1px solid var(--ui-border);background:rgba(128,128,128,.10);
+  transition:opacity .25s;
+}
+.alarm-item.off{opacity:.45;}
+.alarm-info{flex:1;min-width:0;}
+.alarm-time{font-size:21px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:.5px;}
+.alarm-meta{font-size:11.5px;opacity:.72;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.alarm-actions{display:flex;align-items:center;gap:7px;flex:none;}
+.mini{
+  width:34px;height:34px;border-radius:11px;border:1px solid var(--ui-border);
+  background:transparent;color:var(--ui-text);cursor:pointer;font-size:14px;
+  display:grid;place-items:center;transition:transform .12s;
+}
+.mini:active{transform:scale(.9);}
+.switch{position:relative;display:inline-block;width:46px;height:27px;flex:none;cursor:pointer;}
+.switch input{opacity:0;width:0;height:0;position:absolute;}
+.switch span{
+  position:absolute;inset:0;border-radius:99px;
+  background:rgba(128,128,128,.35);transition:background .25s;
+}
+.switch span::before{
+  content:"";position:absolute;width:21px;height:21px;border-radius:50%;
+  left:3px;top:3px;background:#fff;transition:transform .25s;
+  box-shadow:0 2px 6px rgba(0,0,0,.3);
+}
+.switch input:checked + span{background:var(--accent);}
+.switch input:checked + span::before{transform:translateX(19px);}
+.alarm-form{display:flex;flex-direction:column;gap:9px;}
+.form-hint{font-size:11.5px;opacity:.6;margin-top:8px;line-height:1.45;}
+
+/* ============ ALARM OVERLAY ============ */
+.alarm-overlay{
+  position:fixed;inset:0;z-index:100;display:none;
+  place-items:center;padding:24px;
+  background:rgba(0,0,0,.72);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+}
+.alarm-overlay.show{display:grid;animation:fadeIn .25s ease;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.alarm-card{
+  width:min(340px,100%);text-align:center;
+  background:var(--ui-bg);color:var(--ui-text);
+  border:1px solid var(--ui-border);border-radius:28px;
+  padding:30px 24px 26px;
+  box-shadow:0 30px 80px rgba(0,0,0,.6);
+  animation:pop .35s cubic-bezier(.2,1.3,.4,1);
+}
+@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.bell{font-size:52px;display:block;animation:ring 1s infinite;}
+@keyframes ring{
+  0%,100%{transform:rotate(0)}
+  15%{transform:rotate(-18deg)}
+  30%{transform:rotate(16deg)}
+  45%{transform:rotate(-12deg)}
+  60%{transform:rotate(8deg)}
+  75%{transform:rotate(-4deg)}
+}
+.alarm-card-time{font-size:46px;font-weight:900;letter-spacing:2px;margin:10px 0 2px;font-variant-numeric:tabular-nums;}
+.alarm-card-label{font-size:16px;font-weight:700;opacity:.92;}
+.alarm-card-zone{font-size:12.5px;opacity:.6;margin-top:4px;}
+.alarm-card .btn{margin-top:22px;width:100%;padding:15px;font-size:16px;}
+
+@media (max-width:400px){
+  .logo{font-size:13.5px;}
+  .digital .time{letter-spacing:1px;}
+  .tp-select{font-size:20px;padding:12px 32px 12px 12px;}
+  .slider-row label{min-width:72px;font-size:11px;}
+}
+</style>
+</head>
+<body data-theme="elegante">
+
+<div class="topbar">
+  <div class="logo"><span class="logo-mark">⟲</span> Reloj Inverso</div>
+  <button class="icon-btn" id="btnSettings" aria-label="Ajustes">⚙️</button>
+</div>
+
+<main>
+  <div class="clock" id="clock">
+    <div class="face-photo" id="facePhoto"></div>
+    <div class="face-flag" id="faceFlag"></div>
+    <div class="face-film" id="faceFilm"></div>
+    <div class="ticks" id="ticks"></div>
+    <div class="numbers" id="numbers"></div>
+    <div class="avatar" id="avatar">
+      <span class="avatar-hint">👤</span>
+      <span class="flag-fill" id="avatarFlag"></span>
+    </div>
+    <div class="hand hour" id="handHour"></div>
+    <div class="hand minute" id="handMinute"></div>
+    <div class="hand second" id="handSecond"></div>
+    <div class="cap"></div>
+  </div>
+
+  <div class="zone-badge" id="zoneBadge">
+    <span class="zb-flag" id="zoneBadgeFlag"></span>
+    <span class="zb-name" id="zoneBadgeName"></span>
+  </div>
+
+  <div class="digital" id="digitalBlock">
+    <div class="time" id="digitalTime">--:--:--</div>
+    <div class="zone" id="zoneLabel">Hora local</div>
+    <div class="date" id="dateLabel"></div>
+  </div>
+</main>
+
+<div class="backdrop" id="backdrop"></div>
+
+<aside class="sheet" id="sheet" aria-hidden="true">
+  <div class="sheet-grip"></div>
+  <div class="sheet-head">
+    <h2>Ajustes</h2>
+    <button class="icon-btn small" id="btnClose" aria-label="Cerrar">✕</button>
+  </div>
+
+  <div class="sheet-body">
+    <section class="sec">
+      <h3>🌍 PAÍS / ZONA HORARIA</h3>
+      <select class="input" id="zoneSelect"></select>
+      <div class="form-hint">Al elegir otro país, su bandera podrá mostrarse en el reloj según la sección de abajo.</div>
+    </section>
+
+    <section class="sec">
+      <h3>🏳️ DÓNDE VER LA BANDERA</h3>
+      <div class="chips" id="flagPlacementChips"></div>
+    </section>
+
+    <section class="sec">
+      <h3>📏 TAMAÑO DE LA BANDERA</h3>
+      <div class="slider-row">
+        <label>Centro</label>
+        <input type="range" id="flagCenterSize" min="10" max="150" step="5" value="60">
+        <span class="slider-val" id="flagCenterSizeVal">60%</span>
+      </div>
+      <div class="slider-row">
+        <label>Tablero</label>
+        <input type="range" id="flagFaceSize" min="20" max="350" step="5" value="160">
+        <span class="slider-val" id="flagFaceSizeVal">160%</span>
+      </div>
+      <div class="form-hint">
+        Aumenta para que la bandera llene más el círculo (se recorta); disminuye para verla completa sin recortar. <b>100%</b> ≈ el ancho del reloj completo.
+      </div>
+    </section>
+
+    <section class="sec">
+      <h3>🎨 ESTILO</h3>
+      <div class="chips" id="themeChips"></div>
+    </section>
+
+    <section class="sec">
+      <h3>✨ COLOR DE ACENTO</h3>
+      <div class="swatches" id="accentSwatches"></div>
+    </section>
+
+    <section class="sec">
+      <h3>🖼️ FONDO DE LA APP</h3>
+      <div class="bg-grid" id="bgGrid"></div>
+      <div class="row">
+        <label class="btn file">📁 Subir imagen
+          <input type="file" id="bgUpload" accept="image/*" hidden>
+        </label>
+        <button class="btn" id="btnClearBg">↺ Usar tema</button>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h3>🎯 FOTO DEL TABLERO</h3>
+      <div class="row">
+        <label class="btn file">🖼️ Subir imagen
+          <input type="file" id="faceUpload" accept="image/*" hidden>
+        </label>
+        <button class="btn danger" id="btnClearFace">🗑️ Quitar</button>
+      </div>
+      <div class="slider-row">
+        <label>Opacidad foto</label>
+        <input type="range" id="faceOpacity" min="0" max="100" value="35">
+        <span class="slider-val" id="faceOpacityVal">35%</span>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h3>🏳️ OPACIDAD DE LA BANDERA</h3>
+      <div class="slider-row">
+        <label>Opacidad</label>
+        <input type="range" id="flagOpacity" min="0" max="100" value="100">
+        <span class="slider-val" id="flagOpacityVal">100%</span>
+      </div>
+      <div class="form-hint">Ajusta qué tan visible se ve la bandera en el tablero.</div>
+    </section>
+
+    <section class="sec">
+      <h3>🎞️ PELÍCULA DE COLOR</h3>
+      <div class="swatches" id="filmSwatches"></div>
+      <div class="row" style="margin-top:12px;align-items:center;">
+        <label class="btn file" style="flex:0 0 auto;padding:10px 14px;">
+          🎨 Personalizado
+          <input type="color" id="filmColorInput" value="#000000" style="position:absolute;inset:0;opacity:0;cursor:pointer;">
+        </label>
+        <span id="filmColorPreview" style="flex:1;font-family:monospace;font-size:13px;padding:10px 14px;border-radius:14px;border:1px solid var(--ui-border);background:rgba(128,128,128,.12);">#000000</span>
+      </div>
+      <div class="slider-row">
+        <label>Intensidad</label>
+        <input type="range" id="filmOpacity" min="0" max="100" value="0">
+        <span class="slider-val" id="filmOpacityVal">0%</span>
+      </div>
+      <div class="form-hint">
+        Aplica una capa de color sobre la foto y la bandera para mejorar el contraste con los números y punteros.
+      </div>
+    </section>
+
+    <section class="sec">
+      <h3>🕐 RELOJ DIGITAL</h3>
+      <label class="toggle-row">
+        <span class="txt">
+          Mostrar reloj digital
+          <div class="sub">Hora, zona y fecha en la pantalla principal</div>
+        </span>
+        <span class="switch">
+          <input type="checkbox" id="toggleDigital" checked>
+          <span></span>
+        </span>
+      </label>
+    </section>
+
+    <section class="sec">
+      <h3>👤 FOTO EN EL CENTRO</h3>
+      <div class="row">
+        <label class="btn file">📷 Subir foto
+          <input type="file" id="photoUpload" accept="image/*" hidden>
+        </label>
+        <button class="btn" id="btnClearPhoto">🗑️ Quitar foto</button>
+      </div>
+      <div class="form-hint">La foto se muestra en <b>Hora local</b> o cuando la bandera del centro está desactivada.</div>
+    </section>
+
+    <section class="sec">
+      <h3>⏰ ALARMAS</h3>
+      <div class="alarm-list" id="alarmList"></div>
+
+      <div class="alarm-form">
+        <div class="time-picker">
+          <div class="tp-col">
+            <span class="tp-label">Hora</span>
+            <select class="tp-select" id="alarmHour" aria-label="Hora"></select>
+          </div>
+          <div class="tp-sep">:</div>
+          <div class="tp-col">
+            <span class="tp-label">Minuto</span>
+            <select class="tp-select" id="alarmMinute" aria-label="Minuto"></select>
+          </div>
+        </div>
+
+        <div class="tp-preview">
+          <span>Se establecerá a las</span>
+          <strong id="tpPreview">07:00</strong>
+        </div>
+
+        <input type="text" class="input" id="alarmLabelInput" placeholder="Etiqueta (opcional)" maxlength="24" autocomplete="off">
+        <select class="input" id="alarmZoneSelect"></select>
+        <select class="input" id="alarmSoundSelect"></select>
+
+        <div class="row">
+          <button class="btn primary" id="btnAddAlarm">✓ Establecer alarma</button>
+          <button class="btn" id="btnClearAlarm">Limpiar</button>
+        </div>
+        <div class="form-hint">Elige hora, minuto, etiqueta, zona y sonido, y pulsa <b>Establecer alarma</b>.</div>
+      </div>
+    </section>
+  </div>
+</aside>
+
+<div class="alarm-overlay" id="alarmOverlay">
+  <div class="alarm-card">
+    <span class="bell">🔔</span>
+    <div class="alarm-card-time" id="alarmCardTime">00:00</div>
+    <div class="alarm-card-label" id="alarmCardLabel">Alarma</div>
+    <div class="alarm-card-zone" id="alarmCardZone"></div>
+    <button class="btn primary" id="btnStopAlarm">Detener</button>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   1. DATOS
+   ============================================================ */
+const ZONES = [
+  {tz:'local',                            name:'🕓 Hora local',              shortName:'Hora local',              flag:''},
+  {tz:'America/Bogota',                   name:'🇨🇴 Colombia',                shortName:'Colombia',                flag:'🇨🇴'},
+  {tz:'America/Mexico_City',              name:'🇲🇽 México (CDMX)',           shortName:'México (CDMX)',           flag:'🇲🇽'},
+  {tz:'America/Argentina/Buenos_Aires',   name:'🇦🇷 Argentina',               shortName:'Argentina',               flag:'🇦🇷'},
+  {tz:'America/Sao_Paulo',                name:'🇧🇷 Brasil',                  shortName:'Brasil',                  flag:'🇧🇷'},
+  {tz:'America/Santiago',                 name:'🇨🇱 Chile',                   shortName:'Chile',                   flag:'🇨🇱'},
+  {tz:'America/Lima',                     name:'🇵🇪 Perú',                    shortName:'Perú',                    flag:'🇵🇪'},
+  {tz:'America/Caracas',                  name:'🇻🇪 Venezuela',               shortName:'Venezuela',               flag:'🇻🇪'},
+  {tz:'America/New_York',                 name:'🇺🇸 EE.UU. (Nueva York)',     shortName:'EE.UU. (Nueva York)',     flag:'🇺🇸'},
+  {tz:'America/Los_Angeles',              name:'🇺🇸 EE.UU. (Los Ángeles)',    shortName:'EE.UU. (Los Ángeles)',    flag:'🇺🇸'},
+  {tz:'America/Toronto',                  name:'🇨🇦 Canadá (Toronto)',        shortName:'Canadá (Toronto)',        flag:'🇨🇦'},
+  {tz:'Europe/Madrid',                    name:'🇪🇸 España',                  shortName:'España',                  flag:'🇪🇸'},
+  {tz:'Europe/London',                    name:'🇬🇧 Reino Unido',             shortName:'Reino Unido',             flag:'🇬🇧'},
+  {tz:'Europe/Paris',                     name:'🇫🇷 Francia',                 shortName:'Francia',                 flag:'🇫🇷'},
+  {tz:'Europe/Berlin',                    name:'🇩🇪 Alemania',                shortName:'Alemania',                flag:'🇩🇪'},
+  {tz:'Europe/Rome',                      name:'🇮🇹 Italia',                  shortName:'Italia',                  flag:'🇮🇹'},
+  {tz:'Europe/Moscow',                    name:'🇷🇺 Rusia (Moscú)',           shortName:'Rusia (Moscú)',           flag:'🇷🇺'},
+  {tz:'Europe/Istanbul',                  name:'🇹🇷 Turquía',                 shortName:'Turquía',                 flag:'🇹🇷'},
+  {tz:'Africa/Cairo',                     name:'🇪🇬 Egipto',                  shortName:'Egipto',                  flag:'🇪🇬'},
+  {tz:'Africa/Johannesburg',              name:'🇿🇦 Sudáfrica',               shortName:'Sudáfrica',               flag:'🇿🇦'},
+  {tz:'Asia/Dubai',                       name:'🇦🇪 Emiratos Árabes',         shortName:'Emiratos Árabes',         flag:'🇦🇪'},
+  {tz:'Asia/Kolkata',                     name:'🇮🇳 India',                   shortName:'India',                   flag:'🇮🇳'},
+  {tz:'Asia/Shanghai',                    name:'🇨🇳 China',                   shortName:'China',                   flag:'🇨🇳'},
+  {tz:'Asia/Tokyo',                       name:'🇯🇵 Japón',                   shortName:'Japón',                   flag:'🇯🇵'},
+  {tz:'Asia/Seoul',                       name:'🇰🇷 Corea del Sur',           shortName:'Corea del Sur',           flag:'🇰🇷'},
+  {tz:'Australia/Sydney',                 name:'🇦🇺 Australia (Sídney)',      shortName:'Australia (Sídney)',      flag:'🇦🇺'},
+  {tz:'Pacific/Auckland',                 name:'🇳🇿 Nueva Zelanda',           shortName:'Nueva Zelanda',           flag:'🇳🇿'}
+];
+
+const THEMES = [
+  {id:'elegante', name:'Elegante', emoji:'🕰️'},
+  {id:'kawaii',   name:'Kawaii',   emoji:'🌸'},
+  {id:'junior',   name:'Junior',   emoji:'🎈'},
+  {id:'minimal',  name:'Minimal',  emoji:'⬜'},
+  {id:'neon',     name:'Neón',     emoji:'💜'},
+  {id:'retro',    name:'Retro',    emoji:'📻'}
+];
+
+const ACCENTS = ['', '#d4af37', '#ff7ab6', '#7c5cff', '#00d4ff',
+                 '#ff5a5f', '#2ecc71', '#ff9f1c', '#ffffff', '#1c1f26'];
+
+const BACKGROUNDS = [
+  {id:'auto',   name:'Auto',      css:null},
+  {id:'sunset', name:'Atardecer', css:'linear-gradient(135deg,#ff9a9e,#fad0c4,#fbc2eb)'},
+  {id:'ocean',  name:'Océano',    css:'linear-gradient(135deg,#2193b0,#6dd5ed)'},
+  {id:'forest', name:'Bosque',    css:'linear-gradient(135deg,#134e5e,#71b280)'},
+  {id:'night',  name:'Noche',     css:'linear-gradient(135deg,#0f2027,#203a43,#2c5364)'},
+  {id:'candy',  name:'Caramelo',  css:'linear-gradient(135deg,#fbc2eb,#a6c1ee)'},
+  {id:'peach',  name:'Durazno',   css:'linear-gradient(135deg,#ffecd2,#fcb69f)'},
+  {id:'galaxy', name:'Galaxia',   css:'radial-gradient(circle at 20% 20%,#3a1c71,#d76d77,#ffaf7b)'},
+  {id:'mint',   name:'Menta',     css:'linear-gradient(135deg,#a8edea,#fed6e3)'},
+  {id:'gold',   name:'Oro',       css:'linear-gradient(135deg,#2c2416,#574a2e,#1a150d)'},
+  {id:'crimson',name:'Carmesí',   css:'linear-gradient(135deg,#42275a,#734b6d,#c94b4b)'},
+  {id:'ice',    name:'Hielo',     css:'linear-gradient(135deg,#e0eafc,#cfdef3)'}
+];
+
+const ALARM_SOUNDS = [
+  {id:'classic', name:'🔔 Clásico'},
+  {id:'digital', name:'📱 Digital'},
+  {id:'chime',   name:'🎵 Campanilla'},
+  {id:'siren',   name:'🚨 Sirena'}
+];
+
+const FLAG_PLACEMENTS = [
+  {id:'center', name:'Centro',  emoji:'🎯'},
+  {id:'face',   name:'Tablero', emoji:'🕐'},
+  {id:'both',   name:'Ambos',   emoji:'✨'},
+  {id:'none',   name:'Ninguno', emoji:'🚫'}
+];
+
+const FILM_COLORS = [
+  '#000000', '#ffffff', '#0a1929', '#2d1b0e',
+  '#1a1a2e', '#3d1a1a', '#f5e6d3', '#4a4a4a'
+];
+
+/* ============================================================
+   2. ESTADO
+   ============================================================ */
+const STORAGE_KEY = 'relojInverso.v1';
+const DEFAULT_STATE = {
+  zone: 'local',
+  theme: 'elegante',
+  accent: '',
+  bgId: 'auto',
+  bgImage: '',
+  faceImage: '',
+  faceOpacity: 0.35,
+  flagOpacity: 1,
+  flagCenterSize: 0.60,   /* ★ nuevo: tamaño bandera centro */
+  flagFaceSize:   1.60,   /* ★ nuevo: tamaño bandera tablero */
+  filmColor: '#000000',
+  filmOpacity: 0,
+  showDigital: true,
+  photo: '',
+  flagPlacement: 'center',
+  alarms: []
+};
+
+let state = Object.assign({}, DEFAULT_STATE);
+try {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (raw) state = Object.assign({}, DEFAULT_STATE, JSON.parse(raw));
+} catch(e){ /* ignore */ }
+if (!Array.isArray(state.alarms)) state.alarms = [];
+if (typeof state.faceOpacity !== 'number') state.faceOpacity = 0.35;
+if (typeof state.flagOpacity !== 'number') state.flagOpacity = 1;
+if (typeof state.flagCenterSize !== 'number') state.flagCenterSize = 0.60;
+if (typeof state.flagFaceSize   !== 'number') state.flagFaceSize   = 1.60;
+if (typeof state.filmOpacity !== 'number') state.filmOpacity = 0;
+if (!state.filmColor) state.filmColor = '#000000';
+if (typeof state.showDigital !== 'boolean') state.showDigital = true;
+if (!state.flagPlacement) state.flagPlacement = 'center';
+
+function save(){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch(e){
+    console.warn('No se pudo guardar (espacio insuficiente).', e);
+    toast('No hay espacio para guardar. Prueba con imágenes más pequeñas.');
+  }
+}
+
+/* ============================================================
+   3. REFERENCIAS DOM
+   ============================================================ */
+const $ = id => document.getElementById(id);
+const clock      = $('clock');
+const ticksEl    = $('ticks');
+const numbersEl  = $('numbers');
+const avatarEl   = $('avatar');
+const avatarFlag = $('avatarFlag');
+const facePhotoEl= $('facePhoto');
+const faceFlagEl = $('faceFlag');
+const faceFilmEl = $('faceFilm');
+const handHour   = $('handHour');
+const handMinute = $('handMinute');
+const handSecond = $('handSecond');
+const digitalBlock=$('digitalBlock');
+const digitalTime= $('digitalTime');
+const zoneLabel  = $('zoneLabel');
+const dateLabel  = $('dateLabel');
+const sheet      = $('sheet');
+const backdrop   = $('backdrop');
+const alarmOverlay = $('alarmOverlay');
+const alarmListEl  = $('alarmList');
+const zoneBadgeEl  = $('zoneBadge');
+const zoneBadgeFlag= $('zoneBadgeFlag');
+const zoneBadgeName= $('zoneBadgeName');
+
+/* ============================================================
+   4. CONSTRUCCIÓN DE LA ESFERA (espejada)
+   ============================================================ */
+(function buildFace(){
+  let frag = document.createDocumentFragment();
+  for (let i = 0; i < 60; i++){
+    const d = document.createElement('div');
+    d.className = 'tick' + (i % 5 === 0 ? ' major' : '');
+    d.style.setProperty('--a', (-i * 6) + 'deg');
+    frag.appendChild(d);
+  }
+  ticksEl.appendChild(frag);
+
+  frag = document.createDocumentFragment();
+  for (let n = 1; n <= 12; n++){
+    const d = document.createElement('div');
+    d.className = 'num';
+    d.style.setProperty('--a', (-n * 30) + 'deg');
+    const s = document.createElement('span');
+    s.textContent = n;
+    d.appendChild(s);
+    frag.appendChild(d);
+  }
+  numbersEl.appendChild(frag);
+})();
+
+if (window.ResizeObserver){
+  const ro = new ResizeObserver(entries => {
+    for (const e of entries){
+      clock.style.setProperty('--u', e.contentRect.width + 'px');
+    }
+  });
+  ro.observe(clock);
+} else {
+  const fit = () => clock.style.setProperty('--u', clock.clientWidth + 'px');
+  window.addEventListener('resize', fit); fit();
+}
+
+/* ============================================================
+   5. UTILIDADES DE TIEMPO
+   ============================================================ */
+const fmtCache = {};
+function getFormatter(tz){
+  const key = tz || '__local__';
+  if (!fmtCache[key]){
+    const opts = {
+      hour12: false,
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      weekday: 'long', day: '2-digit', month: 'short', year: 'numeric'
+    };
+    if (tz) opts.timeZone = tz;
+    try {
+      fmtCache[key] = new Intl.DateTimeFormat('es-ES', opts);
+    } catch(e){
+      fmtCache[key] = new Intl.DateTimeFormat('es-ES', {
+        hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit',
+        weekday:'long', day:'2-digit', month:'short', year:'numeric'
+      });
+    }
+  }
+  return fmtCache[key];
+}
+
+function getParts(tz){
+  const now = new Date();
+  const parts = {};
+  try {
+    for (const p of getFormatter(tz).formatToParts(now)) parts[p.type] = p.value;
+  } catch(e){
+    for (const p of getFormatter(null).formatToParts(now)) parts[p.type] = p.value;
+  }
+  let h = parseInt(parts.hour, 10);
+  if (isNaN(h) || h === 24) h = 0;
+  return {
+    h,
+    m: parseInt(parts.minute, 10) || 0,
+    s: parseInt(parts.second, 10) || 0,
+    ms: now.getMilliseconds(),
+    weekday: parts.weekday || '',
+    day: parts.day || '',
+    month: parts.month || '',
+    year: parts.year || ''
+  };
+}
+
+const pad = n => (n < 10 ? '0' : '') + n;
+
+function zoneName(tz){
+  if (!tz || tz === 'local') return 'Hora local';
+  const z = ZONES.find(z => z.tz === tz);
+  return z ? z.name : tz;
+}
+
+/* ============================================================
+   6. RENDER PRINCIPAL
+   ============================================================ */
+let lastDateKey = '';
+
+function render(){
+  const tz = (state.zone === 'local') ? null : state.zone;
+  const p  = getParts(tz);
+
+  const sec = p.s + p.ms / 1000;
+  const min = p.m + sec / 60;
+  const hr  = (p.h % 12) + min / 60;
+
+  handHour.style.transform   = 'rotate(' + (-hr  * 30) + 'deg)';
+  handMinute.style.transform = 'rotate(' + (-min * 6)  + 'deg)';
+  handSecond.style.transform = 'rotate(' + (-sec * 6)  + 'deg)';
+
+  digitalTime.textContent = pad(p.h) + ':' + pad(p.m) + ':' + pad(p.s);
+
+  const dk = p.day + p.month + p.year;
+  if (dk !== lastDateKey){
+    lastDateKey = dk;
+    dateLabel.textContent = p.weekday + ' ' + p.day + ' ' + p.month + ' ' + p.year;
+  }
+
+  checkAlarms(p);
+}
+
+function loop(){ render(); requestAnimationFrame(loop); }
+
+/* ============================================================
+   7. AUDIO / SONIDOS DE ALARMA
+   ============================================================ */
+let audioCtx = null;
+let soundTimer = null;
+
+function ensureAudio(){
+  if (!audioCtx){
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    } catch(e){ audioCtx = null; }
+  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function playSound(id){
+  const ctx = ensureAudio();
+  if (!ctx) return;
+  const t0 = ctx.currentTime;
+
+  if (id === 'digital'){
+    for (let i = 0; i < 4; i++){
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'square';
+      o.frequency.value = 1800;
+      const t = t0 + i * 0.12;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.18, t + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.08);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(t); o.stop(t + 0.1);
+    }
+  }
+  else if (id === 'chime'){
+    [523.25, 659.25, 783.99].forEach(function(f, i){
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.value = f;
+      const t = t0 + i * 0.22;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.32, t + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.55);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(t); o.stop(t + 0.6);
+    });
+  }
+  else if (id === 'siren'){
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(440, t0);
+    o.frequency.linearRampToValueAtTime(880, t0 + 0.25);
+    o.frequency.linearRampToValueAtTime(440, t0 + 0.5);
+    o.frequency.linearRampToValueAtTime(880, t0 + 0.75);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(0.2, t0 + 0.03);
+    g.gain.setValueAtTime(0.2, t0 + 0.85);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.95);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(t0); o.stop(t0 + 1);
+  }
+  else {
+    [880, 1174.66].forEach(function(f, i){
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'triangle';
+      o.frequency.value = f;
+      const t = t0 + i * 0.17;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.3, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.24);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(t); o.stop(t + 0.28);
+    });
+  }
+}
+
+function startAlarmSound(id){
+  stopAlarmSound();
+  const snd = id || 'classic';
+  playSound(snd);
+  soundTimer = setInterval(function(){ playSound(snd); }, 1200);
+}
+function stopAlarmSound(){
+  if (soundTimer){ clearInterval(soundTimer); soundTimer = null; }
+}
+
+const firedKeys = new Set();
+
+function checkAlarms(p){
+  if (!state.alarms.length) return;
+  if (p.s !== 0) return;
+
+  for (let i = 0; i < state.alarms.length; i++){
+    const a = state.alarms[i];
+    if (!a.on) continue;
+    const tz = (a.zone === 'local') ? null : a.zone;
+    const ap = (tz === ((state.zone === 'local') ? null : state.zone)) ? p : getParts(tz);
+    if (ap.s !== 0) continue;
+
+    const parts = a.time.split(':');
+    const ah = parseInt(parts[0], 10);
+    const am = parseInt(parts[1], 10);
+    if (ap.h === ah && ap.m === am){
+      const key = a.id + '|' + ap.year + ap.month + ap.day + '|' + ah + ':' + am;
+      if (!firedKeys.has(key)){
+        firedKeys.add(key);
+        triggerAlarm(a);
+      }
+    }
+  }
+}
+
+function triggerAlarm(a){
+  $('alarmCardTime').textContent  = a.time;
+  $('alarmCardLabel').textContent = a.label || '¡Alarma!';
+  $('alarmCardZone').textContent  = zoneName(a.zone);
+  alarmOverlay.classList.add('show');
+  startAlarmSound(a.sound || 'classic');
+  if (navigator.vibrate){ try { navigator.vibrate([350,180,350,180,350]); } catch(e){} }
+}
+
+function dismissAlarm(){
+  alarmOverlay.classList.remove('show');
+  stopAlarmSound();
+  if (navigator.vibrate){ try { navigator.vibrate(0); } catch(e){} }
+}
+
+$('btnStopAlarm').addEventListener('click', dismissAlarm);
+
+document.addEventListener('click', function(){ ensureAudio(); }, { once:true });
+
+/* ============================================================
+   8. APLICAR ESTADO VISUAL
+   ============================================================ */
+function applyTheme(){
+  document.body.dataset.theme = state.theme;
+  if (state.accent){
+    document.body.style.setProperty('--accent',   state.accent);
+    document.body.style.setProperty('--sec-hand', state.accent);
+    document.body.style.setProperty('--cap',      state.accent);
+  } else {
+    document.body.style.removeProperty('--accent');
+    document.body.style.removeProperty('--sec-hand');
+    document.body.style.removeProperty('--cap');
+  }
+}
+
+function applyBackground(){
+  const b = document.body;
+  if (state.bgImage){
+    b.style.backgroundImage = 'url("' + state.bgImage + '")';
+    b.style.backgroundSize = 'cover';
+    b.style.backgroundPosition = 'center';
+    b.style.backgroundRepeat = 'no-repeat';
+    return;
+  }
+  const preset = BACKGROUNDS.find(function(x){ return x.id === state.bgId; });
+  if (!preset || !preset.css){
+    b.style.backgroundImage = '';
+  } else {
+    b.style.backgroundImage = preset.css;
+    b.style.backgroundSize = 'cover';
+    b.style.backgroundPosition = 'center';
+    b.style.backgroundRepeat = 'no-repeat';
+  }
+}
+
+function applyFacePhoto(){
+  if (state.faceImage){
+    facePhotoEl.style.backgroundImage = 'url("' + state.faceImage + '")';
+    facePhotoEl.classList.add('has-photo');
+  } else {
+    facePhotoEl.style.backgroundImage = '';
+    facePhotoEl.classList.remove('has-photo');
+  }
+  facePhotoEl.style.setProperty('--face-opacity', state.faceOpacity);
+}
+
+function applyFilm(){
+  faceFilmEl.style.setProperty('--film-color', state.filmColor);
+  faceFilmEl.style.setProperty('--film-opacity', state.filmOpacity);
+}
+
+/* ★ NUEVO: aplica los tamaños de bandera */
+function applyFlagSizes(){
+  avatarFlag.style.setProperty('--flag-center-size', state.flagCenterSize);
+  faceFlagEl.style.setProperty('--flag-face-size',   state.flagFaceSize);
+}
+
+function applyDigitalVisibility(){
+  digitalBlock.classList.toggle('hidden', !state.showDigital);
+}
+
+/* ============================================================
+   ★ CENTRO + TABLERO + BADGE contextual ★
+   ============================================================ */
+function applyPhoto(){
+  const isLocal = (!state.zone || state.zone === 'local');
+  const zone = isLocal ? null : ZONES.find(z => z.tz === state.zone);
+  const flag = zone ? zone.flag : '';
+  const placement = state.flagPlacement || 'center';
+
+  const showCenter = !isLocal && flag && (placement === 'center' || placement === 'both');
+  const showFace   = !isLocal && flag && (placement === 'face'   || placement === 'both');
+
+  /* Centro */
+  if (showCenter){
+    avatarEl.classList.remove('has-photo');
+    avatarEl.classList.add('has-flag');
+    avatarFlag.textContent = flag;
+    avatarEl.style.backgroundImage = '';
+  } else {
+    avatarEl.classList.remove('has-flag');
+    avatarFlag.textContent = '';
+    if (state.photo){
+      avatarEl.style.backgroundImage = 'url("' + state.photo + '")';
+      avatarEl.classList.add('has-photo');
+    } else {
+      avatarEl.style.backgroundImage = '';
+      avatarEl.classList.remove('has-photo');
+    }
+  }
+
+  /* Tablero */
+  if (showFace){
+    faceFlagEl.textContent = flag;
+    faceFlagEl.classList.add('has-flag');
+    faceFlagEl.style.setProperty('--flag-opacity', state.flagOpacity);
+  } else {
+    faceFlagEl.classList.remove('has-flag');
+    faceFlagEl.textContent = '';
+  }
+
+  /* Badge contextual */
+  if (!isLocal && zone){
+    zoneBadgeFlag.textContent = zone.flag;
+    zoneBadgeName.textContent = zone.shortName || zone.name;
+    zoneBadgeEl.classList.add('show');
+  } else {
+    zoneBadgeEl.classList.remove('show');
+    zoneBadgeFlag.textContent = '';
+    zoneBadgeName.textContent = '';
+  }
+}
+
+/* ============================================================
+   9. UI: SELECTORES DE ZONA
+   ============================================================ */
+function buildZoneSelect(sel, current){
+  sel.innerHTML = '';
+  ZONES.forEach(function(z){
+    const o = document.createElement('option');
+    o.value = z.tz;
+    o.textContent = z.name;
+    if (z.tz === current) o.selected = true;
+    sel.appendChild(o);
+  });
+}
+
+const zoneSelect = $('zoneSelect');
+const alarmZoneSelect = $('alarmZoneSelect');
+buildZoneSelect(zoneSelect, state.zone);
+buildZoneSelect(alarmZoneSelect, state.zone);
+
+zoneSelect.addEventListener('change', function(){
+  state.zone = this.value;
+  zoneLabel.textContent = zoneName(state.zone);
+  applyPhoto();
+  save();
+});
+
+/* ============================================================
+   10. UI: TEMAS
+   ============================================================ */
+(function buildThemes(){
+  const cont = $('themeChips');
+  THEMES.forEach(function(t){
+    const c = document.createElement('div');
+    c.className = 'chip' + (t.id === state.theme ? ' active' : '');
+    c.textContent = t.emoji + ' ' + t.name;
+    c.dataset.id = t.id;
+    c.addEventListener('click', function(){
+      state.theme = t.id;
+      applyTheme();
+      save();
+      Array.prototype.forEach.call(cont.children, function(el){
+        el.classList.toggle('active', el.dataset.id === t.id);
+      });
+    });
+    cont.appendChild(c);
+  });
+})();
+
+/* ============================================================
+   11. UI: COLORES DE ACENTO
+   ============================================================ */
+(function buildAccents(){
+  const cont = $('accentSwatches');
+  ACCENTS.forEach(function(col){
+    const s = document.createElement('div');
+    s.className = 'sw' + (col === '' ? ' auto' : '') + (state.accent === col ? ' active' : '');
+    if (col) s.style.background = col;
+    s.title = col ? col : 'Color del tema';
+    s.addEventListener('click', function(){
+      state.accent = col;
+      applyTheme();
+      save();
+      Array.prototype.forEach.call(cont.children, function(el){
+        el.classList.toggle('active', el === s);
+      });
+    });
+    cont.appendChild(s);
+  });
+})();
+
+/* ============================================================
+   12. UI: FONDOS DE LA APP
+   ============================================================ */
+(function buildBackgrounds(){
+  const cont = $('bgGrid');
+  BACKGROUNDS.forEach(function(bg){
+    const d = document.createElement('div');
+    d.className = 'bg-item' + (!state.bgImage && state.bgId === bg.id ? ' active' : '');
+    if (bg.css) d.style.backgroundImage = bg.css;
+    else d.style.background = 'var(--face-bg)';
+    const lbl = document.createElement('span');
+    lbl.textContent = bg.name;
+    d.appendChild(lbl);
+
+    d.addEventListener('click', function(){
+      state.bgId = bg.id;
+      state.bgImage = '';
+      applyBackground();
+      save();
+      Array.prototype.forEach.call(cont.children, function(el){
+        el.classList.toggle('active', el === d);
+      });
+    });
+    cont.appendChild(d);
+  });
+})();
+
+$('btnClearBg').addEventListener('click', function(){
+  state.bgImage = '';
+  state.bgId = 'auto';
+  applyBackground();
+  save();
+  refreshBgSelection();
+});
+
+function refreshBgSelection(){
+  const cont = $('bgGrid');
+  Array.prototype.forEach.call(cont.children, function(el, i){
+    el.classList.toggle('active', !state.bgImage && BACKGROUNDS[i].id === state.bgId);
+  });
+}
+
+/* ============================================================
+   13. UI: FOTO DEL TABLERO
+   ============================================================ */
+const faceOpacityInput = $('faceOpacity');
+const faceOpacityVal   = $('faceOpacityVal');
+
+function refreshFaceOpacityUI(){
+  const v = Math.round(state.faceOpacity * 100);
+  faceOpacityInput.value = v;
+  faceOpacityVal.textContent = v + '%';
+}
+
+faceOpacityInput.addEventListener('input', function(){
+  state.faceOpacity = parseInt(this.value, 10) / 100;
+  faceOpacityVal.textContent = this.value + '%';
+  facePhotoEl.style.setProperty('--face-opacity', state.faceOpacity);
+  save();
+});
+
+$('btnClearFace').addEventListener('click', function(){
+  state.faceImage = '';
+  applyFacePhoto();
+  save();
+});
+
+/* ============================================================
+   14. UI: OPACIDAD DE LA BANDERA
+   ============================================================ */
+const flagOpacityInput = $('flagOpacity');
+const flagOpacityVal   = $('flagOpacityVal');
+
+function refreshFlagOpacityUI(){
+  const v = Math.round(state.flagOpacity * 100);
+  flagOpacityInput.value = v;
+  flagOpacityVal.textContent = v + '%';
+}
+
+flagOpacityInput.addEventListener('input', function(){
+  state.flagOpacity = parseInt(this.value, 10) / 100;
+  flagOpacityVal.textContent = this.value + '%';
+  faceFlagEl.style.setProperty('--flag-opacity', state.flagOpacity);
+  save();
+});
+
+/* ============================================================
+   ★ 15. UI: TAMAÑO DE LA BANDERA ★
+   ============================================================ */
+const flagCenterSizeInput = $('flagCenterSize');
+const flagCenterSizeVal   = $('flagCenterSizeVal');
+const flagFaceSizeInput   = $('flagFaceSize');
+const flagFaceSizeVal     = $('flagFaceSizeVal');
+
+function refreshFlagSizesUI(){
+  const c = Math.round(state.flagCenterSize * 100);
+  const f = Math.round(state.flagFaceSize   * 100);
+  flagCenterSizeInput.value = c;
+  flagCenterSizeVal.textContent = c + '%';
+  flagFaceSizeInput.value = f;
+  flagFaceSizeVal.textContent = f + '%';
+}
+
+flagCenterSizeInput.addEventListener('input', function(){
+  state.flagCenterSize = parseInt(this.value, 10) / 100;
+  flagCenterSizeVal.textContent = this.value + '%';
+  applyFlagSizes();
+  save();
+});
+
+flagFaceSizeInput.addEventListener('input', function(){
+  state.flagFaceSize = parseInt(this.value, 10) / 100;
+  flagFaceSizeVal.textContent = this.value + '%';
+  applyFlagSizes();
+  save();
+});
+
+/* ============================================================
+   16. UI: PELÍCULA DE COLOR
+   ============================================================ */
+const filmColorInput   = $('filmColorInput');
+const filmColorPreview = $('filmColorPreview');
+const filmOpacityInput = $('filmOpacity');
+const filmOpacityVal   = $('filmOpacityVal');
+
+function refreshFilmUI(){
+  filmColorInput.value = state.filmColor;
+  filmColorPreview.textContent = state.filmColor.toUpperCase();
+  const v = Math.round(state.filmOpacity * 100);
+  filmOpacityInput.value = v;
+  filmOpacityVal.textContent = v + '%';
+}
+
+(function buildFilmSwatches(){
+  const cont = $('filmSwatches');
+  if (!cont) return;
+  cont.innerHTML = '';
+  FILM_COLORS.forEach(function(col){
+    const s = document.createElement('div');
+    s.className = 'sw' + (col.toLowerCase() === state.filmColor.toLowerCase() ? ' active' : '');
+    s.style.background = col;
+    s.title = col;
+    s.addEventListener('click', function(){
+      state.filmColor = col;
+      applyFilm();
+      refreshFilmUI();
+      save();
+      Array.prototype.forEach.call(cont.children, function(el){
+        el.classList.toggle('active', el === s);
+      });
+    });
+    cont.appendChild(s);
+  });
+})();
+
+filmColorInput.addEventListener('input', function(){
+  state.filmColor = this.value;
+  applyFilm();
+  filmColorPreview.textContent = this.value.toUpperCase();
+  const cont = $('filmSwatches');
+  if (cont){
+    Array.prototype.forEach.call(cont.children, function(el){
+      el.classList.remove('active');
+    });
+  }
+  save();
+});
+
+filmOpacityInput.addEventListener('input', function(){
+  state.filmOpacity = parseInt(this.value, 10) / 100;
+  filmOpacityVal.textContent = this.value + '%';
+  applyFilm();
+  save();
+});
+
+/* ============================================================
+   17. UI: TOGGLE RELOJ DIGITAL
+   ============================================================ */
+const toggleDigital = $('toggleDigital');
+toggleDigital.checked = !!state.showDigital;
+toggleDigital.addEventListener('change', function(){
+  state.showDigital = this.checked;
+  applyDigitalVisibility();
+  save();
+});
+
+/* ============================================================
+   18. UI: UBICACIÓN DE LA BANDERA
+   ============================================================ */
+(function buildFlagPlacementChips(){
+  const cont = $('flagPlacementChips');
+  if (!cont) return;
+  FLAG_PLACEMENTS.forEach(function(p){
+    const c = document.createElement('div');
+    c.className = 'chip' + (p.id === state.flagPlacement ? ' active' : '');
+    c.textContent = p.emoji + ' ' + p.name;
+    c.dataset.id = p.id;
+    c.addEventListener('click', function(){
+      state.flagPlacement = p.id;
+      applyPhoto();
+      save();
+      Array.prototype.forEach.call(cont.children, function(el){
+        el.classList.toggle('active', el.dataset.id === p.id);
+      });
+    });
+    cont.appendChild(c);
+  });
+})();
+
+/* ============================================================
+   19. SUBIDA DE IMÁGENES
+   ============================================================ */
+function processImage(file, maxSize, quality, cb){
+  if (!file || !/^image\//.test(file.type)) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    const img = new Image();
+    img.onload = function(){
+      const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+      const w = Math.max(1, Math.round(img.width * scale));
+      const h = Math.max(1, Math.round(img.height * scale));
+      const cv = document.createElement('canvas');
+      cv.width = w; cv.height = h;
+      const ctx = cv.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      try {
+        cb(cv.toDataURL('image/jpeg', quality));
+      } catch(e){
+        cb(ev.target.result);
+      }
+    };
+    img.onerror = function(){ cb(ev.target.result); };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+$('bgUpload').addEventListener('change', function(e){
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  processImage(f, 1600, 0.78, function(dataUrl){
+    state.bgImage = dataUrl;
+    applyBackground();
+    save();
+    refreshBgSelection();
+  });
+  e.target.value = '';
+});
+
+$('faceUpload').addEventListener('change', function(e){
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  processImage(f, 900, 0.82, function(dataUrl){
+    state.faceImage = dataUrl;
+    applyFacePhoto();
+    save();
+  });
+  e.target.value = '';
+});
+
+$('photoUpload').addEventListener('change', function(e){
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  processImage(f, 600, 0.85, function(dataUrl){
+    state.photo = dataUrl;
+    applyPhoto();
+    save();
+  });
+  e.target.value = '';
+});
+
+$('btnClearPhoto').addEventListener('click', function(){
+  state.photo = '';
+  applyPhoto();
+  save();
+});
+
+/* ============================================================
+   20. UI: SELECTOR DE HORA PERSONALIZADO
+   ============================================================ */
+const hourSelect   = $('alarmHour');
+const minuteSelect = $('alarmMinute');
+const tpPreview    = $('tpPreview');
+
+function buildTimeSelects(){
+  hourSelect.innerHTML = '';
+  minuteSelect.innerHTML = '';
+
+  for (let h = 0; h < 24; h++){
+    const o = document.createElement('option');
+    o.value = pad(h);
+    o.textContent = pad(h);
+    hourSelect.appendChild(o);
+  }
+  for (let m = 0; m < 60; m++){
+    const o = document.createElement('option');
+    o.value = pad(m);
+    o.textContent = pad(m);
+    minuteSelect.appendChild(o);
+  }
+
+  hourSelect.value = '07';
+  minuteSelect.value = '00';
+  updateTimePreview();
+}
+
+function updateTimePreview(){
+  tpPreview.textContent = hourSelect.value + ':' + minuteSelect.value;
+}
+
+hourSelect.addEventListener('change', updateTimePreview);
+minuteSelect.addEventListener('change', updateTimePreview);
+
+function setTimeValues(hh, mm){
+  hourSelect.value = pad(hh);
+  minuteSelect.value = pad(mm);
+  updateTimePreview();
+}
+
+function getTimeValue(){
+  return hourSelect.value + ':' + minuteSelect.value;
+}
+
+buildTimeSelects();
+
+/* ============================================================
+   21. UI: ALARMAS
+   ============================================================ */
+function buildSoundSelect(sel, current){
+  sel.innerHTML = '';
+  ALARM_SOUNDS.forEach(function(s){
+    const o = document.createElement('option');
+    o.value = s.id;
+    o.textContent = s.name;
+    if (s.id === current) o.selected = true;
+    sel.appendChild(o);
+  });
+}
+
+const alarmSoundSelect = $('alarmSoundSelect');
+buildSoundSelect(alarmSoundSelect, 'classic');
+
+alarmSoundSelect.addEventListener('change', function(){
+  ensureAudio();
+  playSound(this.value);
+});
+
+function renderAlarms(){
+  alarmListEl.innerHTML = '';
+
+  if (!state.alarms.length){
+    const d = document.createElement('div');
+    d.className = 'empty';
+    d.textContent = 'No hay alarmas configuradas 👇';
+    alarmListEl.appendChild(d);
+    return;
+  }
+
+  state.alarms.forEach(function(a){
+    const item = document.createElement('div');
+    item.className = 'alarm-item' + (a.on ? '' : ' off');
+
+    const info = document.createElement('div');
+    info.className = 'alarm-info';
+    const t = document.createElement('div');
+    t.className = 'alarm-time';
+    t.textContent = a.time;
+    const m = document.createElement('div');
+    m.className = 'alarm-meta';
+    const snd = ALARM_SOUNDS.find(function(s){ return s.id === a.sound; });
+    const sndName = snd ? snd.name.replace(/^\S+\s*/, '') : 'Clásico';
+    m.textContent = zoneName(a.zone) + (a.label ? ' · ' + a.label : '') + ' · ' + sndName;
+    info.appendChild(t); info.appendChild(m);
+
+    const actions = document.createElement('div');
+    actions.className = 'alarm-actions';
+
+    const btnTest = document.createElement('button');
+    btnTest.className = 'mini'; btnTest.textContent = '🔔'; btnTest.title = 'Probar sonido';
+    btnTest.addEventListener('click', function(){
+      ensureAudio();
+      playSound(a.sound || 'classic');
+    });
+
+    const btnDel = document.createElement('button');
+    btnDel.className = 'mini'; btnDel.textContent = '🗑️'; btnDel.title = 'Eliminar';
+    btnDel.addEventListener('click', function(){
+      state.alarms = state.alarms.filter(function(x){ return x.id !== a.id; });
+      save(); renderAlarms();
+    });
+
+    const sw = document.createElement('label');
+    sw.className = 'switch';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.checked = !!a.on;
+    cb.addEventListener('change', function(){
+      a.on = cb.checked;
+      item.classList.toggle('off', !a.on);
+      save();
+    });
+    const sp = document.createElement('span');
+    sw.appendChild(cb); sw.appendChild(sp);
+
+    actions.appendChild(btnTest);
+    actions.appendChild(btnDel);
+    actions.appendChild(sw);
+
+    item.appendChild(info);
+    item.appendChild(actions);
+    alarmListEl.appendChild(item);
+  });
+}
+
+$('btnAddAlarm').addEventListener('click', function(){
+  const timeVal = getTimeValue();
+  if (!/^\d{2}:\d{2}$/.test(timeVal)){
+    toast('Elige primero una hora válida ⏰');
+    return;
+  }
+  const label = $('alarmLabelInput').value.trim().slice(0, 24);
+  const zone  = alarmZoneSelect.value;
+  const sound = alarmSoundSelect.value;
+
+  state.alarms.push({
+    id: 'a' + Date.now() + Math.random().toString(36).slice(2, 6),
+    time: timeVal,
+    label: label,
+    zone: zone,
+    sound: sound,
+    on: true
+  });
+  save();
+  renderAlarms();
+  ensureAudio();
+  toast('✓ Alarma establecida a las ' + timeVal);
+  $('alarmLabelInput').value = '';
+});
+
+$('btnClearAlarm').addEventListener('click', function(){
+  setTimeValues(7, 0);
+  $('alarmLabelInput').value = '';
+  alarmZoneSelect.value = state.zone;
+  buildSoundSelect(alarmSoundSelect, 'classic');
+  toast('Formulario limpiado');
+});
+
+/* ============================================================
+   22. SHEET
+   ============================================================ */
+function openSheet(){
+  sheet.classList.add('open');
+  backdrop.classList.add('open');
+  sheet.setAttribute('aria-hidden','false');
+}
+function closeSheet(){
+  sheet.classList.remove('open');
+  backdrop.classList.remove('open');
+  sheet.setAttribute('aria-hidden','true');
+}
+$('btnSettings').addEventListener('click', openSheet);
+$('btnClose').addEventListener('click', closeSheet);
+backdrop.addEventListener('click', closeSheet);
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape'){
+    if (alarmOverlay.classList.contains('show')) dismissAlarm();
+    else closeSheet();
+  }
+});
+
+/* ============================================================
+   23. TOAST
+   ============================================================ */
+let toastEl = null, toastTimer = null;
+function toast(msg){
+  if (!toastEl){
+    toastEl = document.createElement('div');
+    toastEl.style.cssText =
+      'position:fixed;left:50%;bottom:26px;transform:translateX(-50%);' +
+      'background:rgba(0,0,0,.82);color:#fff;padding:11px 18px;border-radius:14px;' +
+      'font-size:13px;z-index:200;max-width:86vw;text-align:center;' +
+      'box-shadow:0 12px 30px rgba(0,0,0,.4);transition:opacity .3s;opacity:0;' +
+      'pointer-events:none;';
+    document.body.appendChild(toastEl);
+  }
+  toastEl.textContent = msg;
+  toastEl.style.opacity = '1';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ toastEl.style.opacity = '0'; }, 2600);
+}
+
+/* ============================================================
+   24. ARRANQUE
+   ============================================================ */
+applyTheme();
+applyBackground();
+applyFacePhoto();
+applyFilm();
+applyFlagSizes();
+applyPhoto();
+applyDigitalVisibility();
+refreshFaceOpacityUI();
+refreshFlagOpacityUI();
+refreshFlagSizesUI();
+refreshFilmUI();
+renderAlarms();
+zoneLabel.textContent = zoneName(state.zone);
+
+if ('wakeLock' in navigator){
+  navigator.wakeLock.request('screen').catch(function(){});
+}
+
+requestAnimationFrame(loop);
+
+})();
+</script>
+</body>
+</html>
